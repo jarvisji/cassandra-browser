@@ -70,7 +70,7 @@ public class CassandraBrowser extends HttpServlet {
 		} else if (CMD_SHOW_CLUSTERNAME.equalsIgnoreCase(strCmd)) {
 			outStr = getClusterName();
 		} else if (CMD_SHOW_CONFIGFILE.equalsIgnoreCase(strCmd)) {
-			outStr = StringEscapeUtils.escapeHtml(getConfigFile());
+			outStr = "<pre>" + StringEscapeUtils.escapeHtml(getConfigFile()) + "</pre>";
 		}
 		doOutPut(outStr);
 	}
@@ -96,9 +96,9 @@ public class CassandraBrowser extends HttpServlet {
 		}
 		listboxHtml.append("</select>");
 		StringBuffer ret = getJSHeader4GetCondDoc();
-		ret.append("theDoc.getElementById('divKs').innerHTML="
+		ret.append("theDoc.getElementById('divKs').innerHTML'"
 				+ listboxHtml.toString());
-		ret.append("</script>");
+		ret.append("';</script>");
 		return ret.toString();
 	}
 
@@ -110,7 +110,7 @@ public class CassandraBrowser extends HttpServlet {
 
 	private String getConfigFile() throws IOException {
 		checkConnection();
-		return "<pre>" + cli.getConfigFile() + "</pre>";
+		return cli.getConfigFile();
 	}
 
 	private String getClusterName() throws IOException {
@@ -151,9 +151,9 @@ public class CassandraBrowser extends HttpServlet {
 		msg = MessageFormat.format(msg, args);
 
 		StringBuffer outSb = this.getJSHeader4GetCondDoc();
-		outSb.append("theDoc.getElementById('divConnectMsg').innerHTML=");
+		outSb.append("theDoc.getElementById('divConnectMsg').innerHTML='");
 		outSb.append(msg);
-		outSb.append("</script>");
+		outSb.append("';</script>");
 		return outSb.toString();
 	}
 
