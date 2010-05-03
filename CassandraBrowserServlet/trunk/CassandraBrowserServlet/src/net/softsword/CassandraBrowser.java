@@ -3,7 +3,10 @@ package net.softsword;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.MessageFormat;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.Servlet;
 import javax.servlet.ServletConfig;
@@ -33,10 +36,12 @@ public class CassandraBrowser extends HttpServlet {
 
 	public static final String PARM_CONNECT_SEVR = "url";
 	public static final String PARM_CONNECT_PORT = "port";
+	public static final String PARM_SHOW_COLUMNFAMILY_KS = "ks";
 
 	private HttpServletRequest request;
 	private HttpServletResponse response;
-	private CassandraClient cli;
+	private CassandraClient _cli;
+	private Map<String, Map<String, String>> _cf;
 
 	/**
 	 * @see HttpServlet#HttpServlet()
@@ -59,7 +64,7 @@ public class CassandraBrowser extends HttpServlet {
 		System.out.println("destory");
 	}
 
-	private void doAction() throws IOException {
+	private void doAction() throws Exception {
 		String strCmd = request.getParameter(CONST_CMD);
 		String outStr = "Wrong cmd.";
 
@@ -67,10 +72,15 @@ public class CassandraBrowser extends HttpServlet {
 			String serverUrl = request.getParameter(PARM_CONNECT_SEVR);
 			String port = request.getParameter(PARM_CONNECT_PORT);
 			outStr = doConnect(serverUrl, port);
+			outStr += getKeyspaces();
 		} else if (CMD_SHOW_CLUSTERNAME.equalsIgnoreCase(strCmd)) {
 			outStr = getClusterName();
 		} else if (CMD_SHOW_CONFIGFILE.equalsIgnoreCase(strCmd)) {
-			outStr = "<pre>" + StringEscapeUtils.escapeHtml(getConfigFile()) + "</pre>";
+			outStr = "<pre>" + StringEscapeUtils.escapeHtml(getConfigFile())
+					+ "</pre>";
+		} else if (CMD_SHOW_COLUMNFAMILY.equalsIgnoreCase(strCmd)) {
+			String ks = request.getParameter(PARM_SHOW_COLUMNFAMILY_KS);
+			outStr = getColumnFamily(ks);
 		}
 		doOutPut(outStr);
 	}
@@ -84,21 +94,41 @@ public class CassandraBrowser extends HttpServlet {
 		out.close();
 	}
 
-	private String getKeyspaces() throws IOException {
-		checkConnection();
-		List<String> lstKs = cli.getKeyspaces();
+	private String getColumnFamily(String ksName) throws Exception {
+		_cf = _cli.getKeySpace(ksName).describeKeyspace();
+		Set<String> setCf = _cf.keySet();
 		StringBuffer listboxHtml = new StringBuffer();
 		listboxHtml
-				.append("<select size='10' name='keyspaces' id='listKs' onclick='javascript: showColumnFamily(this.form, this);'>");
+				.append("<select size='10' name='cf' id='listCf' onclick='javascript: showColumnType(this.form, this);'>");
+		Iterator itrCf = setCf.iterator();
+		while (itrCf != null && itrCf.hasNext()) {
+			String cfName = itrCf.next().toString();
+			listboxHtml.append("<option value='" + cfName + "'>" + cfName
+					+ "</option>");
+		}
+		listboxHtml.append("</select>");
+		StringBuffer ret = getJSHeader4GetCondDoc();
+		ret.append("theDoc.getElementById('divCf').innerHTML=\""
+				+ listboxHtml.toString());
+		ret.append("\";</script>");
+		return ret.toString();
+	}
+
+	private String getKeyspaces() throws IOException {
+		checkConnection();
+		List<String> lstKs = _cli.getKeyspaces();
+		StringBuffer listboxHtml = new StringBuffer();
+		listboxHtml
+				.append("<select size='10' name='ks' id='listKs' onclick='javascript: showColumnFamily(this.form, this);'>");
 		for (String ksName : lstKs) {
 			listboxHtml.append("<option value='" + ksName + "'>" + ksName
 					+ "</option>");
 		}
 		listboxHtml.append("</select>");
 		StringBuffer ret = getJSHeader4GetCondDoc();
-		ret.append("theDoc.getElementById('divKs').innerHTML'"
+		ret.append("theDoc.getElementById('divKs').innerHTML=\""
 				+ listboxHtml.toString());
-		ret.append("';</script>");
+		ret.append("\";</script>");
 		return ret.toString();
 	}
 
@@ -110,12 +140,12 @@ public class CassandraBrowser extends HttpServlet {
 
 	private String getConfigFile() throws IOException {
 		checkConnection();
-		return cli.getConfigFile();
+		return _cli.getConfigFile();
 	}
 
 	private String getClusterName() throws IOException {
 		checkConnection();
-		return cli.getClusterName();
+		return _cli.getClusterName();
 	}
 
 	/**
@@ -128,7 +158,7 @@ public class CassandraBrowser extends HttpServlet {
 		SimpleCassandraClientPool pool = new SimpleCassandraClientPool(
 				serverUrl, Integer.valueOf(port));
 		try {
-			cli = pool.getClient();
+			_cli = pool.getClient();
 		} catch (Exception e) {
 			throw new IOException(e);
 		}
@@ -158,7 +188,7 @@ public class CassandraBrowser extends HttpServlet {
 	}
 
 	private void checkConnection() throws IOException {
-		if (cli == null) {
+		if (_cli == null) {
 			throw new IOException("Servlet was reset, connect again.");
 		}
 	}
@@ -171,7 +201,11 @@ public class CassandraBrowser extends HttpServlet {
 			HttpServletResponse response) throws ServletException, IOException {
 		this.request = request;
 		this.response = response;
-		doAction();
+		try {
+			doAction();
+		} catch (Exception e) {
+			throw new IOException(e);
+		}
 	}
 
 	/**
@@ -182,6 +216,10 @@ public class CassandraBrowser extends HttpServlet {
 			HttpServletResponse response) throws ServletException, IOException {
 		this.request = request;
 		this.response = response;
-		doAction();
+		try {
+			doAction();
+		} catch (Exception e) {
+			throw new IOException(e);
+		}
 	}
 }

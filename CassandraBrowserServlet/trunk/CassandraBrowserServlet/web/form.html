@@ -24,14 +24,19 @@
                 frm.cmd.value = "showColumnFamily";
                 frm.submit();
             }
+
+            function showColumnType(frm, listBox) {
+            }
         </script>
     </head>
     <body>
         <form method="post" action="CassandraBrowser" id="frmCond" target="result">
             <input type="hidden" id="cmd" name="cmd" value="">
-            </input><input type="text" name="url" value="10.224.122.14">
+            </input><input type="hidden" id="ksName"></input>
+            <input type="text" name="url" value="10.224.122.14">
             </input><input type="text" name="port" value="9160">
-            </input><input type="button" value="Connect" onclick="javascript: connect(this.form);">
+            </input>"
+            <input type="button" value="Connect" onclick="javascript: connect(this.form);">
             </input>
             <br/>
             <div id="divConnectMsg">
@@ -39,8 +44,11 @@
             <input type="button" value="ShowConfigFile" onclick="javascript: showConfigFile(this.form);">
             </input><input type="button" value="GetClusterName" onclick="javascript: showClusterName(this.form);">
             </input>
-            <div id="divKs">
-            </div>
+            <table>
+            <tr><td> <div id="divKs">
+            </div></td><td><div id="divCf">
+            </div></td></tr>
+            </table>
         </form>
     </body>
 </html>
