@@ -1,0 +1,46 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>Insert title here</title>
+        <link rel="stylesheet" type="text/css" href="style.css" />
+        <script language="JavaScript">
+            function connect(frm){
+                frm.cmd.value = "connect";
+                frm.submit();
+            }
+            
+            function showConfigFile(frm){
+                frm.cmd.value = "showConfigFile";
+                frm.submit();
+            }
+            
+            function showClusterName(frm){
+                frm.cmd.value = "showClusterName";
+                frm.submit();
+            }
+            
+            function showColumnFamily(frm, listBox){
+                frm.cmd.value = "showColumnFamily";
+                frm.submit();
+            }
+        </script>
+    </head>
+    <body>
+        <form method="post" action="CassandraBrowser" id="frmCond" target="result">
+            <input type="hidden" id="cmd" name="cmd" value="">
+            </input><input type="text" name="url" value="10.224.122.14">
+            </input><input type="text" name="port" value="9160">
+            </input><input type="button" value="Connect" onclick="javascript: connect(this.form);">
+            </input>
+            <br/>
+            <div id="divConnectMsg">
+            </div>
+            <input type="button" value="ShowConfigFile" onclick="javascript: showConfigFile(this.form);">
+            </input><input type="button" value="GetClusterName" onclick="javascript: showClusterName(this.form);">
+            </input>
+            <div id="divKs">
+            </div>
+        </form>
+    </body>
+</html>
